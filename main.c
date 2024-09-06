@@ -11,21 +11,25 @@ int	main(int ac, char **av, char **env)
 		int	pipe_fd[2];
 		int	p_id;
 
-		fd_file1 = fopen(av[1], O_RDONLY);
-		fd_file2 = fopen(av[4], O_WRONLY | O_CREAT | O_TRUNC);
+		fd_file1 = open(av[1], O_RDONLY);
+		fd_file2 = open(av[4], O_WRONLY | O_CREAT | O_TRUNC, 0666);
 		cmd1 = av[2];
 		cmd2 = av[3];
-
+		if (fd_file1 == -1 || fd_file2 == -1)
+		{
+			perror("infile | outfile error");
+			exit(-1);
+		}
 		if (pipe(pipe_fd) == -1)
 		{
 			perror("Error on init pipe!");
-			exit(0);
+			exit(-1);
 		}
 		p_id = fork();
 		if (p_id == -1)
 		{
 			perror("Error on create child!");
-			exit(0);
+			exit(-1);
 		}
 		if (p_id)
 			exec_on_parent_process(fd_file1, cmd1, pipe_fd, env);
@@ -33,5 +37,5 @@ int	main(int ac, char **av, char **env)
 			exec_on_child_process(fd_file2, cmd2, pipe_fd, env);
 	}
 	else
-		ft_putstr_fd("exec ./pipex infile cmd1 cmd2 outfile", 1);
+		ft_putstr_fd("format: ./pipex infile cmd1 cmd2 outfile\n", 2);
 }
