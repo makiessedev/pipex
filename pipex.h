@@ -1,9 +1,8 @@
-#include "./libft/libft.h"
-#include <fcntl.h>
+#ifndef PIPEX_H
+# define PIPEX_H
+# include "./libft/libft.h"
+# include <fcntl.h>
 
-#ifndef pipex
-# define pipex
+void	exec_on_parent_process(char *file, char *cmd, int p_fd[2], char **env);
+void	exec_on_child_process(char *file, char *cmd, int p_fd[2], char **env);
 #endif
-
-void	exec_on_parent_process(int fd, char **cmds, int p_fd[2], char **env);
-void	exec_on_child_process(int fd, char **cmds, int p_fd[2], char **env);

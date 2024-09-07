@@ -2,8 +2,18 @@
 
 static char	*get_bin_path(char *cmd, char **env);
 
-void	exec_on_parent_process(int fd, char **cmds, int p_fd[2], char **env)
+void	exec_on_parent_process(char *file, char *cmd, int p_fd[2], char **env)
 {
+	char	**cmds;
+	int		fd;
+
+	cmds = ft_split(cmd, ' ');
+	fd = open(file, O_RDONLY);
+	if (fd == -1)
+	{
+		perror("infile error");
+		exit(-1);
+	}
 	dup2(p_fd[1], 1);
 	dup2(fd, 0);
 	close(p_fd[0]);
@@ -11,8 +21,18 @@ void	exec_on_parent_process(int fd, char **cmds, int p_fd[2], char **env)
 		perror("Error on exec command!");
 }
 
-void	exec_on_child_process(int fd, char **cmds, int p_fd[2], char **env)
+void	exec_on_child_process(char *file, char *cmd, int p_fd[2], char **env)
 {
+	char	**cmds;
+	int		fd;
+
+	cmds = ft_split(cmd, ' ');
+	fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd == -1)
+	{
+		perror("outfile error");
+		exit(-1);
+	}
 	dup2(p_fd[0], 0);
 	dup2(fd, 1);
 	close(p_fd[1]);
@@ -22,11 +42,11 @@ void	exec_on_child_process(int fd, char **cmds, int p_fd[2], char **env)
 
 static char	*get_bin_path(char *cmd, char **env)
 {
-	int	i;
 	char	**path;
 	char	*err_msg;
-	i = -1;
+	int		i;
 
+	i = -1;
 	while (env[++i])
 	{
 		path = ft_split(env[i], '=');
