@@ -1,4 +1,5 @@
 #include "pipex.h"
+#include <stdio.h>
 
 int	main(int ac, char **av, char **env)
 {
@@ -6,15 +7,16 @@ int	main(int ac, char **av, char **env)
 	{
 		int	fd_file1;
 		int	fd_file2;
-		char	*cmd1;
-		char	*cmd2;
+		char	**cmd1;
+		char	**cmd2;
 		int	pipe_fd[2];
 		int	p_id;
 
 		fd_file1 = open(av[1], O_RDONLY);
 		fd_file2 = open(av[4], O_WRONLY | O_CREAT | O_TRUNC, 0666);
-		cmd1 = av[2];
-		cmd2 = av[3];
+		cmd1 = ft_split(av[2], ' ');
+		cmd2 = ft_split(av[3], ' ');
+
 		if (fd_file1 == -1 || fd_file2 == -1)
 		{
 			perror("infile | outfile error");
