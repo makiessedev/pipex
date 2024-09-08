@@ -12,13 +12,16 @@ void	exec_on_parent_process(char *file, char *cmd, int p_fd[2], char **env)
 	if (fd == -1)
 	{
 		perror("infile error");
-		exit(-1);
+		exit(1);
 	}
 	dup2(p_fd[1], 1);
 	dup2(fd, 0);
 	close(p_fd[0]);
 	if (execve(get_bin_path(cmds[0], env), cmds, env) == -1)
+	{
 		perror("Error on exec command!");
+		exit(-1);
+	}
 }
 
 void	exec_on_child_process(char *file, char *cmd, int p_fd[2], char **env)
@@ -27,17 +30,20 @@ void	exec_on_child_process(char *file, char *cmd, int p_fd[2], char **env)
 	int		fd;
 
 	cmds = ft_split(cmd, ' ');
-	fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	fd = open(file, O_WRONLY | O_CREAT | O_TRUNC, 0777);
 	if (fd == -1)
 	{
 		perror("outfile error");
-		exit(-1);
+		exit(1);
 	}
 	dup2(p_fd[0], 0);
 	dup2(fd, 1);
 	close(p_fd[1]);
 	if (execve(get_bin_path(cmds[0], env), cmds, env) == -1)
+	{
 		perror("Error on exec command!");
+		exit(-1);
+	}
 }
 
 static char	*get_bin_path(char *cmd, char **env)
