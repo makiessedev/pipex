@@ -1,6 +1,7 @@
 #include "pipex.h"
 
 static char	*get_bin_path(char *cmd, char **env);
+static void	free_mat(char **mat);
 
 void	exec_on_parent_process(char *file, char *cmd, int p_fd[2], char **env)
 {
@@ -12,6 +13,7 @@ void	exec_on_parent_process(char *file, char *cmd, int p_fd[2], char **env)
 	if (fd == -1)
 	{
 		perror("infile error");
+		free_mat(cmds);
 		exit(1);
 	}
 	dup2(p_fd[1], 1);
@@ -20,7 +22,8 @@ void	exec_on_parent_process(char *file, char *cmd, int p_fd[2], char **env)
 	if (execve(get_bin_path(cmds[0], env), cmds, env) == -1)
 	{
 		perror("Error on exec command!");
-		exit(-1);
+		free_mat(cmds);
+		exit(-1);;
 	}
 }
 
@@ -34,6 +37,7 @@ void	exec_on_child_process(char *file, char *cmd, int p_fd[2], char **env)
 	if (fd == -1)
 	{
 		perror("outfile error");
+		free_mat(cmds);
 		exit(1);
 	}
 	dup2(p_fd[0], 0);
@@ -42,6 +46,7 @@ void	exec_on_child_process(char *file, char *cmd, int p_fd[2], char **env)
 	if (execve(get_bin_path(cmds[0], env), cmds, env) == -1)
 	{
 		perror("Error on exec command!");
+		free_mat(cmds);
 		exit(-1);
 	}
 }
@@ -64,12 +69,26 @@ static char	*get_bin_path(char *cmd, char **env)
 			{
 				path[i] = ft_strjoin(path[i], ft_strjoin("/", cmd));
 				if (access(path[i], X_OK) == 0)
+				{
 					return (path[i]);
+				}
+				free(path[i]);
 			}
 			err_msg = ft_strjoin(cmd, ": command not found!");
 			ft_putstr_fd(err_msg, 2);
 			exit(-1);
 		}
+		free_mat(path);
 	}
 	exit(-1);
+}
+
+static void	free_mat(char **mat)
+{
+	int	i;
+
+	i = -1;
+	while(mat[++i])
+		free(mat[i]);
+	free(mat);
 }
