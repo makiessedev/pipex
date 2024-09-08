@@ -4,7 +4,7 @@ C_FLAGS = -Wall -Werror -Wextra -fsanitize=address
 RM = rm -rf
 FILES = main.c pipex.c ./libft/libft.a
 
-$(NAME):
+$(NAME): $(FILES)
 	make all -C ./libft
 	$(CC) $(C_FLAGS) $(FILES) -o $(NAME)
 
