@@ -1,11 +1,12 @@
 #include "pipex.h"
 
-static char	*get_bin_path(char *cmd, char **env);
+static char	*get_bin_path(char **cmds, char **env);
 static void	free_mat(char **mat);
 
-void	exec_on_parent_process(char *file, char *cmd, int p_fd[2], char **env)
+void	exec_on_child_process(char *file, char *cmd, int p_fd[2], char **env)
 {
 	char	**cmds;
+	char	*exec_path;
 	int		fd;
 
 	cmds = ft_split(cmd, ' ');
@@ -19,17 +20,20 @@ void	exec_on_parent_process(char *file, char *cmd, int p_fd[2], char **env)
 	dup2(p_fd[1], 1);
 	dup2(fd, 0);
 	close(p_fd[0]);
-	if (execve(get_bin_path(cmds[0], env), cmds, env) == -1)
+	exec_path = get_bin_path(cmds, env);
+	if (execve(exec_path, cmds, env) == -1)
 	{
 		perror("Error on exec command!");
 		free_mat(cmds);
-		exit(-1);;
+		free(exec_path);
+		exit(1);;
 	}
 }
 
-void	exec_on_child_process(char *file, char *cmd, int p_fd[2], char **env)
+void	exec_on_parent_process(char *file, char *cmd, int p_fd[2], char **env)
 {
 	char	**cmds;
+	char	*exec_path;
 	int		fd;
 
 	cmds = ft_split(cmd, ' ');
@@ -43,44 +47,58 @@ void	exec_on_child_process(char *file, char *cmd, int p_fd[2], char **env)
 	dup2(p_fd[0], 0);
 	dup2(fd, 1);
 	close(p_fd[1]);
-	if (execve(get_bin_path(cmds[0], env), cmds, env) == -1)
+	exec_path = get_bin_path(cmds, env);
+	if (execve(exec_path, cmds, env) == -1)
 	{
 		perror("Error on exec command!");
 		free_mat(cmds);
-		exit(-1);
+		free(exec_path);
+		exit(1);
 	}
 }
 
-static char	*get_bin_path(char *cmd, char **env)
+static char	*get_bin_path(char **cmds, char **env)
 {
 	char	**path;
+	char	**paths;
+	char	*bin_path;
 	char	*err_msg;
+	char	*executable;
 	int		i;
 
 	i = -1;
-	while (env[++i])
+	while (env[++i] != NULL)
 	{
 		path = ft_split(env[i], '=');
 		if (ft_strncmp(path[0], "PATH", ft_strlen("PATH")) == 0)
 		{
-			path = ft_split(path[1], ':');
+			paths = ft_split(path[1], ':');
 			i = -1;
-			while (path[++i])
+			while (paths[++i])
 			{
-				path[i] = ft_strjoin(path[i], ft_strjoin("/", cmd));
-				if (access(path[i], X_OK) == 0)
+				bin_path = ft_strjoin(paths[i], "/");
+				executable = ft_strjoin(bin_path, cmds[0]);
+				if (access(executable, X_OK) == 0)
 				{
-					return (path[i]);
+					free_mat(paths);
+					free_mat(path);
+					free(bin_path);
+					return (executable);
 				}
-				free(path[i]);
+				free(executable);
+				free(bin_path);
 			}
-			err_msg = ft_strjoin(cmd, ": command not found!");
+			err_msg = ft_strjoin(cmds[0], ": command not found!");
 			ft_putstr_fd(err_msg, 2);
-			exit(-1);
+			free(err_msg);
+			free_mat(paths);
+			free_mat(path);
+			free_mat(cmds);
+			exit(1);
 		}
 		free_mat(path);
 	}
-	exit(-1);
+	exit(1);
 }
 
 static void	free_mat(char **mat)

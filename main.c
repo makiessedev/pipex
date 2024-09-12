@@ -22,8 +22,10 @@ int	main(int ac, char **av, char **env)
 		exit(1);
 	}
 	if (p_id)
-		exec_on_parent_process(av[1], av[2], pipe_fd, env);
-	else
 		exec_on_child_process(av[4], av[3], pipe_fd, env);
+	else
+	{
+		exec_on_parent_process(av[1], av[2], pipe_fd, env);
+	}
 	return (0);
 }
